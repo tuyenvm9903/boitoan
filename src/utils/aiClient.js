@@ -8,7 +8,7 @@ const normalizeBaseUrl = (baseUrl) => {
 };
 
 export const getOpenAIClient = () => {
-  const apiToken = import.meta.env.VITE_MIMO_TOKEN || import.meta.env.VITE_OPENAI_API_KEY;
+  const apiToken = import.meta.env.VITE_OPENAI_TOKEN;
   if (!apiToken) return null;
 
   return new OpenAI({
@@ -30,16 +30,19 @@ export const getOpenAIErrorMessage = (error) => {
 
   const normalized = (apiMessage || '').toLowerCase();
   if (normalized.includes('quota') || normalized.includes('insufficient')) {
-    return 'API key đã hết quota hoặc chưa bật thanh toán trên OpenAI/Mimo.';
+    return 'API token đã hết quota hoặc chưa bật thanh toán trên OpenAI/Mimo.';
   }
-  if (normalized.includes('invalid api key') || normalized.includes('incorrect api key')) {
-    return 'Token không hợp lệ. Vui lòng kiểm tra lại VITE_MIMO_TOKEN.';
+  if (
+    (normalized.includes('invalid') && normalized.includes('api')) ||
+    (normalized.includes('incorrect') && normalized.includes('api'))
+  ) {
+    return 'API token không hợp lệ. Vui lòng kiểm tra lại VITE_OPENAI_TOKEN.';
   }
   if (normalized.includes('model') && normalized.includes('not')) {
     return 'Model chưa khả dụng. Hãy kiểm tra VITE_OPENAI_MODEL cho đúng với nhà cung cấp.';
   }
   if (normalized.includes('unauthorized') || normalized.includes('forbidden')) {
-    return 'Không có quyền truy cập API. Kiểm tra lại key/project hoặc endpoint.';
+    return 'Không có quyền truy cập API. Kiểm tra lại token/project hoặc endpoint.';
   }
   return apiMessage || 'Lỗi gọi AI API không xác định.';
 };

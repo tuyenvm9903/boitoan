@@ -32,10 +32,10 @@ jobs:
 
       - name: Build app
         env:
-          VITE_MIMO_TOKEN: ${{ secrets.MIMO_TOKEN }}
-          VITE_OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
-          VITE_OPENAI_MODEL: ${{ secrets.OPENAI_MODEL }}
-          VITE_OPENAI_VISION_MODEL: ${{ secrets.OPENAI_VISION_MODEL }}
+          VITE_OPENAI_TOKEN: ${{ secrets.MIMO_TOKEN }}
+          VITE_OPENAI_BASE_URL: ${{ secrets.MIMO_BASE_URL }}
+          VITE_OPENAI_MODEL: ${{ secrets.MIMO_MODEL }}
+          VITE_OPENAI_VISION_MODEL: ${{ secrets.MIMO_VISION_MODEL }}
         run: npm run build
 
       - name: Upload Pages artifact

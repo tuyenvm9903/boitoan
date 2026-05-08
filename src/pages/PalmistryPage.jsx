@@ -51,7 +51,7 @@ export default function PalmistryPage() {
 
     const openai = getOpenAIClient();
     if (!openai) {
-      setErrorMessage('Thiếu cấu hình VITE_MIMO_TOKEN. Vui lòng thêm API key để phân tích ảnh.');
+      setErrorMessage('Thiếu cấu hình VITE_OPENAI_TOKEN. Vui lòng thêm API token để phân tích ảnh.');
       return;
     }
 

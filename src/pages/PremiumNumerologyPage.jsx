@@ -113,7 +113,7 @@ export default function PremiumNumerologyPage() {
       const prompt = generateNumerologyAnalysisPrompt(profile);
       const openai = getOpenAIClient();
       if (!openai) {
-        setAiReport('Thiếu cấu hình VITE_MIMO_TOKEN. Vui lòng thêm API key để tạo báo cáo AI.');
+        setAiReport('Thiếu cấu hình VITE_OPENAI_TOKEN. Vui lòng thêm API token để tạo báo cáo AI.');
         return;
       }
 

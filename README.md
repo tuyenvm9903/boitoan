@@ -40,8 +40,8 @@ npm install
 # Tạo file .env từ template
 cp .env.example .env
 
-# Chỉnh sửa .env và thêm API key (nếu cần)
-# VITE_MIMO_TOKEN=your_api_key_here
+# Chỉnh sửa .env và thêm API token (nếu cần)
+# VITE_OPENAI_TOKEN=your_provider_token_here
 
 # Chạy development server
 npm run dev
@@ -65,7 +65,7 @@ npm run lint     # Chạy ESLint
    - **Build Command:** `npm install && npm run build`
    - **Publish Directory:** `dist`
 3. Thêm Environment Variables (nếu cần):
-   - `VITE_MIMO_TOKEN`
+   - `VITE_OPENAI_TOKEN`
 
 ### Vercel / Netlify
 
