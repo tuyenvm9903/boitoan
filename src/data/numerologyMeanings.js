@@ -6,7 +6,7 @@
 // ============ LIFE PATH MEANINGS ============
 export const LIFE_PATH_MEANINGS = {
   1: {
-    title: 'Người Tiên Phong',
+    title: 'Người Tiên Phong', 
     keywords: ['Lãnh đạo', 'Độc lập', 'Sáng tạo', 'Tham vọng'],
     element: 'Hỏa',
     strengths: [

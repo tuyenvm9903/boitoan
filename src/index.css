@@ -67,6 +67,11 @@
   --color-text-dim: var(--lux-mist);
   --color-bg: var(--lux-ink);
   --color-bg-card: var(--lux-lacquer);
+  --color-fire: var(--lux-vermillion);
+  --color-water: var(--lux-jade);
+  --color-earth: var(--lux-gold-muted);
+  --color-wood: var(--lux-jade-light);
+  --color-metal: var(--lux-ivory-muted);
 
   /* ========== LUXURY GRADIENTS ========== */
   --lux-gradient-obsidian: radial-gradient(ellipse at top, #1a1614 0%, #0d0b0a 50%, #050404 100%);

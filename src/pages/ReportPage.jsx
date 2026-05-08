@@ -4,12 +4,7 @@ import { ScrollText, Calendar, User, ArrowRight, Bot, Loader2, RotateCcw, Sparkl
 import { fullNumerologyAnalysis } from '../utils/numerology';
 import { fullAstrologyAnalysis } from '../utils/astrology';
 import { generatePDF } from '../services/pdfGenerator';
-import OpenAI from 'openai';
-
-const openai = new OpenAI({
-  apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-  dangerouslyAllowBrowser: true
-});
+import { getChatModel, getOpenAIClient, getOpenAIErrorMessage } from '../utils/aiClient';
 
 export default function ReportPage() {
   const [formData, setFormData] = useState({
@@ -125,6 +120,13 @@ export default function ReportPage() {
     }
 
     try {
+      const openai = getOpenAIClient();
+      if (!openai) {
+        setReport('Thiếu cấu hình VITE_OPENAI_API_KEY. Vui lòng thêm API key để tạo báo cáo AI.');
+        setIsGenerating(false);
+        return;
+      }
+
       // Build prompt with all included sections
       let promptSections = `
 **THÔNG TIN:**
@@ -204,7 +206,7 @@ export default function ReportPage() {
 ## XI. LỜI KHUYÊN TỔNG HỢP`;
 
       const response = await openai.chat.completions.create({
-        model: 'gpt-4o',
+        model: getChatModel(),
         messages: [
           {
             role: 'system',
@@ -227,7 +229,7 @@ ${reportSections}`
       setReport(response.choices[0].message.content);
     } catch (error) {
       console.error('Error:', error);
-      setReport('Không thể tạo báo cáo. Vui lòng thử lại sau.');
+      setReport(`Không thể tạo báo cáo: ${getOpenAIErrorMessage(error)}`);
     }
     setIsGenerating(false);
   };

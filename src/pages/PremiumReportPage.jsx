@@ -12,12 +12,7 @@ import { calculateBirthdayChart, calculatePinnaclePyramid, calculateLifeCycles }
 import { crossReferenceAnalysis } from '../utils/crossAnalysis';
 import { generatePDF } from '../services/pdfGenerator';
 import { getBirthHourFromTime, TIME_PERIODS } from '../utils/birthHourMapping';
-import OpenAI from 'openai';
-
-const openai = new OpenAI({
-  apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-  dangerouslyAllowBrowser: true
-});
+import { getChatModel, getOpenAIClient, getOpenAIErrorMessage } from '../utils/aiClient';
 
 export default function PremiumReportPage() {
   const [stage, setStage] = useState('wizard'); // 'wizard', 'loading', 'reveal', 'dashboard'
@@ -124,8 +119,14 @@ export default function PremiumReportPage() {
 
   const generateAIReport = async (data, tuVi, numerology, cross) => {
     try {
+      const openai = getOpenAIClient();
+      if (!openai) {
+        setAiReport('Thiếu cấu hình VITE_OPENAI_API_KEY. Vui lòng thêm API key để tạo báo cáo AI.');
+        return;
+      }
+
       const response = await openai.chat.completions.create({
-        model: 'gpt-4o',
+        model: getChatModel(),
         messages: [
           {
             role: 'system',
@@ -171,7 +172,7 @@ Tạo báo cáo ngắn gọn (500 từ) với:
       setAiReport(response.choices[0].message.content);
     } catch (error) {
       console.error('AI Report error:', error);
-      setAiReport('Không thể tạo báo cáo AI. Vui lòng thử lại sau.');
+      setAiReport(`Không thể tạo báo cáo AI: ${getOpenAIErrorMessage(error)}`);
     }
   };
 

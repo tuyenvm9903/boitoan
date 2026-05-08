@@ -29,6 +29,7 @@ import {
   generateNumerologyAnalysisPrompt,
   NUMEROLOGY_SYSTEM_PROMPT
 } from '../utils/numerologyAIPrompts';
+import { getChatModel, getOpenAIClient, getOpenAIErrorMessage } from '../utils/aiClient';
 
 /**
  * Premium Numerology Page
@@ -110,29 +111,29 @@ export default function PremiumNumerologyPage() {
 
     try {
       const prompt = generateNumerologyAnalysisPrompt(profile);
+      const openai = getOpenAIClient();
+      if (!openai) {
+        setAiReport('Thiếu cấu hình VITE_OPENAI_API_KEY. Vui lòng thêm API key để tạo báo cáo AI.');
+        return;
+      }
 
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o',
-          messages: [
-            { role: 'system', content: NUMEROLOGY_SYSTEM_PROMPT },
-            { role: 'user', content: prompt }
-          ],
-          temperature: 0.8,
-          max_tokens: 4000
-        })
+      const response = await openai.chat.completions.create({
+        model: getChatModel(),
+        messages: [
+          { role: 'system', content: NUMEROLOGY_SYSTEM_PROMPT },
+          { role: 'user', content: prompt }
+        ],
+        temperature: 0.8,
+        max_tokens: 4000
       });
 
-      const data = await response.json();
-      setAiReport(data.choices[0].message.content);
+      if (!response?.choices?.[0]?.message?.content) {
+        throw new Error('Phản hồi từ OpenAI không hợp lệ.');
+      }
+      setAiReport(response.choices[0].message.content);
     } catch (error) {
       console.error('AI Error:', error);
-      setAiReport('Đã xảy ra lỗi khi tạo báo cáo. Vui lòng thử lại sau.');
+      setAiReport(`Đã xảy ra lỗi khi tạo báo cáo: ${getOpenAIErrorMessage(error)}`);
     } finally {
       setIsGeneratingAI(false);
     }
