@@ -41,7 +41,7 @@ npm install
 cp .env.example .env
 
 # Chỉnh sửa .env và thêm API key (nếu cần)
-# VITE_OPENAI_API_KEY=your_api_key_here
+# VITE_MIMO_TOKEN=your_api_key_here
 
 # Chạy development server
 npm run dev
@@ -65,7 +65,7 @@ npm run lint     # Chạy ESLint
    - **Build Command:** `npm install && npm run build`
    - **Publish Directory:** `dist`
 3. Thêm Environment Variables (nếu cần):
-   - `VITE_OPENAI_API_KEY`
+   - `VITE_MIMO_TOKEN`
 
 ### Vercel / Netlify
 

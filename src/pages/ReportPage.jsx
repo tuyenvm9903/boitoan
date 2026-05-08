@@ -122,7 +122,7 @@ export default function ReportPage() {
     try {
       const openai = getOpenAIClient();
       if (!openai) {
-        setReport('Thiếu cấu hình VITE_OPENAI_API_KEY. Vui lòng thêm API key để tạo báo cáo AI.');
+        setReport('Thiếu cấu hình VITE_MIMO_TOKEN. Vui lòng thêm API key để tạo báo cáo AI.');
         setIsGenerating(false);
         return;
       }

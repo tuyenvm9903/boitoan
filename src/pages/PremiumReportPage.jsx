@@ -121,7 +121,7 @@ export default function PremiumReportPage() {
     try {
       const openai = getOpenAIClient();
       if (!openai) {
-        setAiReport('Thiếu cấu hình VITE_OPENAI_API_KEY. Vui lòng thêm API key để tạo báo cáo AI.');
+        setAiReport('Thiếu cấu hình VITE_MIMO_TOKEN. Vui lòng thêm API key để tạo báo cáo AI.');
         return;
       }
 

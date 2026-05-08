@@ -8,11 +8,11 @@ const normalizeBaseUrl = (baseUrl) => {
 };
 
 export const getOpenAIClient = () => {
-  const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-  if (!apiKey) return null;
+  const apiToken = import.meta.env.VITE_MIMO_TOKEN || import.meta.env.VITE_OPENAI_API_KEY;
+  if (!apiToken) return null;
 
   return new OpenAI({
-    apiKey,
+    apiKey: apiToken,
     baseURL: normalizeBaseUrl(import.meta.env.VITE_OPENAI_BASE_URL),
     dangerouslyAllowBrowser: true,
     fetch: (url, init) => fetch(url, { ...init, credentials: 'omit' })
@@ -33,7 +33,7 @@ export const getOpenAIErrorMessage = (error) => {
     return 'API key đã hết quota hoặc chưa bật thanh toán trên OpenAI/Mimo.';
   }
   if (normalized.includes('invalid api key') || normalized.includes('incorrect api key')) {
-    return 'API key không hợp lệ. Vui lòng kiểm tra lại VITE_OPENAI_API_KEY.';
+    return 'Token không hợp lệ. Vui lòng kiểm tra lại VITE_MIMO_TOKEN.';
   }
   if (normalized.includes('model') && normalized.includes('not')) {
     return 'Model chưa khả dụng. Hãy kiểm tra VITE_OPENAI_MODEL cho đúng với nhà cung cấp.';
