@@ -4,6 +4,7 @@ import { Hand, Upload, Sparkles, Loader2, X, Image as ImageIcon } from 'lucide-r
 import { getOpenAIClient, getOpenAIErrorMessage, getVisionModel } from '../utils/aiClient';
 
 const MAX_IMAGE_SIZE = 8 * 1024 * 1024;
+const MIN_ANALYSIS_CHARACTERS = 2600;
 
 const fileToDataUrl = (file) =>
   new Promise((resolve, reject) => {
@@ -121,13 +122,51 @@ Yêu cầu chất lượng:
             ]
           }
         ],
-        max_tokens: 1800
+        max_tokens: 2200
       });
 
-      const content = response?.choices?.[0]?.message?.content;
+      let content = response?.choices?.[0]?.message?.content;
       if (!content) {
         throw new Error('Phản hồi AI không có nội dung.');
       }
+
+      if (content.length < MIN_ANALYSIS_CHARACTERS) {
+        const expanded = await openai.chat.completions.create({
+          model: getVisionModel(),
+          messages: [
+            {
+              role: 'system',
+              content:
+                'Bạn là biên tập viên chỉ tay học cao cấp. Nhiệm vụ: mở rộng bản phân tích thành bản đầy đủ, rõ ràng, có chiều sâu, tránh lặp câu.'
+            },
+            {
+              role: 'user',
+              content: `Bản phân tích hiện tại đang quá ngắn. Hãy viết lại và mở rộng theo đúng bố cục sau, giữ văn phong chắc gọn:
+## Tính cách nổi bật
+## Đường tình cảm
+## Công việc - tiền bạc
+## Tổng quan
+## Nếu muốn xem tiếp
+
+Yêu cầu:
+- Dài hơn bản cũ, mục tiêu 700-1200 từ.
+- Mỗi mục có luận điểm cụ thể, ví dụ dễ hiểu.
+- Không dùng câu chung chung kiểu "ai cũng đúng".
+- Giữ mức độ chắc chắn hợp lý (dễ có xu hướng/có khả năng), không khẳng định tuyệt đối.
+
+Đây là bản cũ cần mở rộng:
+${content}`
+            }
+          ],
+          max_tokens: 2600
+        });
+
+        const expandedContent = expanded?.choices?.[0]?.message?.content?.trim();
+        if (expandedContent) {
+          content = expandedContent;
+        }
+      }
+
       setResult(content);
     } catch (error) {
       setErrorMessage(getOpenAIErrorMessage(error));
