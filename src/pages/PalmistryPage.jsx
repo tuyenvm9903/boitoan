@@ -5,6 +5,9 @@ import { getOpenAIClient, getOpenAIErrorMessage, getVisionModel } from '../utils
 
 const MAX_IMAGE_SIZE = 8 * 1024 * 1024;
 const MIN_ANALYSIS_CHARACTERS = 2600;
+const FOLLOWUP_SECTION_REGEX = /\n*#{0,3}\s*Nếu muốn xem tiếp[\s\S]*$/i;
+
+const stripFollowupSection = (text) => text.replace(FOLLOWUP_SECTION_REGEX, '').trim();
 
 const fileToDataUrl = (file) =>
   new Promise((resolve, reject) => {
@@ -102,13 +105,6 @@ Nguyên tắc:
 ## Tổng quan
 - 3-5 ý kết luận súc tích về khí chất, hướng phát triển, và điều nên ưu tiên.
 
-## Nếu muốn xem tiếp
-- Đưa đúng 4 gợi ý tiếp theo:
-- Đường tình duyên chi tiết
-- Thời điểm dễ kết hôn
-- So sánh tay trái và tay phải
-- Kết hợp ngày sinh để xem thần số học
-
 Yêu cầu chất lượng:
 - Văn phong chắc, rõ, "đọc phát hiểu ngay", không lan man.
 - Không dùng câu quá chung chung kiểu ai cũng đúng.
@@ -146,7 +142,6 @@ Yêu cầu chất lượng:
 ## Đường tình cảm
 ## Công việc - tiền bạc
 ## Tổng quan
-## Nếu muốn xem tiếp
 
 Yêu cầu:
 - Dài hơn bản cũ, mục tiêu 700-1200 từ.
@@ -167,7 +162,7 @@ ${content}`
         }
       }
 
-      setResult(content);
+      setResult(stripFollowupSection(content));
     } catch (error) {
       setErrorMessage(getOpenAIErrorMessage(error));
     } finally {
