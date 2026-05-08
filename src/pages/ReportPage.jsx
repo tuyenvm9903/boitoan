@@ -4,7 +4,7 @@ import { ScrollText, Calendar, User, ArrowRight, Bot, Loader2, RotateCcw, Sparkl
 import { fullNumerologyAnalysis } from '../utils/numerology';
 import { fullAstrologyAnalysis } from '../utils/astrology';
 import { generatePDF } from '../services/pdfGenerator';
-import { getChatModel, getOpenAIClient, getOpenAIErrorMessage } from '../utils/aiClient';
+import { createLongFormCompletion, getChatModel, getOpenAIClient, getOpenAIErrorMessage } from '../utils/aiClient';
 
 export default function ReportPage() {
   const [formData, setFormData] = useState({
@@ -205,13 +205,18 @@ export default function ReportPage() {
 ## X. VẬN HẠN NĂM ${new Date().getFullYear()}
 ## XI. LỜI KHUYÊN TỔNG HỢP`;
 
-      const response = await openai.chat.completions.create({
+      const content = await createLongFormCompletion({
+        openai,
         model: getChatModel(),
+        minCharacters: 3500,
+        maxTokens: 4000,
+        maxContinuations: 2,
         messages: [
           {
             role: 'system',
             content: `Bạn là chuyên gia huyền học Á Đông uyên bác. Phong cách: Đẳng cấp, trưởng thành, tinh tế.
 Tránh mê tín, tập trung vào văn hóa và phát triển bản thân. Format Markdown.
+Chỉ dùng tiếng Việt có dấu, không trộn tiếng Trung/Anh.
 Kết hợp tất cả thông tin được cung cấp để tạo báo cáo tổng hợp toàn diện.`
           },
           {
@@ -222,11 +227,10 @@ ${promptSections}
 Tạo báo cáo chi tiết với các phần:
 ${reportSections}`
           }
-        ],
-        max_tokens: 4000
+        ]
       });
 
-      setReport(response.choices[0].message.content);
+      setReport(content);
     } catch (error) {
       console.error('Error:', error);
       setReport(`Không thể tạo báo cáo: ${getOpenAIErrorMessage(error)}`);

@@ -29,7 +29,7 @@ import {
   generateNumerologyAnalysisPrompt,
   NUMEROLOGY_SYSTEM_PROMPT
 } from '../utils/numerologyAIPrompts';
-import { getChatModel, getOpenAIClient, getOpenAIErrorMessage } from '../utils/aiClient';
+import { createLongFormCompletion, getChatModel, getOpenAIClient, getOpenAIErrorMessage } from '../utils/aiClient';
 
 /**
  * Premium Numerology Page
@@ -117,20 +117,20 @@ export default function PremiumNumerologyPage() {
         return;
       }
 
-      const response = await openai.chat.completions.create({
+      const content = await createLongFormCompletion({
+        openai,
         model: getChatModel(),
-        messages: [
-          { role: 'system', content: NUMEROLOGY_SYSTEM_PROMPT },
-          { role: 'user', content: prompt }
-        ],
+        minCharacters: 4500,
+        maxTokens: 4000,
+        maxContinuations: 2,
         temperature: 0.8,
-        max_tokens: 4000
+        messages: [
+          { role: 'system', content: `${NUMEROLOGY_SYSTEM_PROMPT}\nChỉ dùng tiếng Việt có dấu, không trộn tiếng Trung/Anh.` },
+          { role: 'user', content: prompt }
+        ]
       });
 
-      if (!response?.choices?.[0]?.message?.content) {
-        throw new Error('Phản hồi từ OpenAI không hợp lệ.');
-      }
-      setAiReport(response.choices[0].message.content);
+      setAiReport(content);
     } catch (error) {
       console.error('AI Error:', error);
       setAiReport(`Đã xảy ra lỗi khi tạo báo cáo: ${getOpenAIErrorMessage(error)}`);

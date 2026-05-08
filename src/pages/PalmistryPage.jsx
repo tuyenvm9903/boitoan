@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Hand, Upload, Sparkles, Loader2, X, Image as ImageIcon } from 'lucide-react';
-import { getOpenAIClient, getOpenAIErrorMessage, getVisionModel } from '../utils/aiClient';
+import { createLongFormCompletion, getOpenAIClient, getOpenAIErrorMessage, getVisionModel } from '../utils/aiClient';
 
 const MAX_IMAGE_SIZE = 8 * 1024 * 1024;
 const MIN_ANALYSIS_CHARACTERS = 2600;
@@ -66,8 +66,12 @@ export default function PalmistryPage() {
 
       const imageDataUrl = await fileToDataUrl(selectedFile);
 
-      const response = await openai.chat.completions.create({
+      const content = await createLongFormCompletion({
+        openai,
         model: getVisionModel(),
+        minCharacters: MIN_ANALYSIS_CHARACTERS,
+        maxTokens: 2200,
+        maxContinuations: 2,
         messages: [
           {
             role: 'system',
@@ -75,6 +79,7 @@ export default function PalmistryPage() {
 Mục tiêu: đọc ảnh lòng bàn tay và trả lời theo văn phong rõ ràng, thực tế, có chiều sâu như chuyên gia.
 Nguyên tắc:
 - Luôn viết tiếng Việt dễ hiểu, tránh mơ hồ.
+- Chỉ dùng tiếng Việt có dấu, không xen tiếng Trung/Anh.
 - Đưa nhận định theo mức độ chắc chắn: "Dễ có xu hướng...", "Có khả năng...", không tuyệt đối hóa.
 - Nếu ảnh mờ/thiếu góc/khó nhìn đường tay, phải nêu rõ giới hạn trước khi phân tích.
 - Nội dung chỉ mang tính tham khảo phát triển bản thân, không phải kết luận y khoa/tài chính/pháp lý.
@@ -117,50 +122,8 @@ Yêu cầu chất lượng:
               }
             ]
           }
-        ],
-        max_tokens: 2200
+        ]
       });
-
-      let content = response?.choices?.[0]?.message?.content;
-      if (!content) {
-        throw new Error('Phản hồi AI không có nội dung.');
-      }
-
-      if (content.length < MIN_ANALYSIS_CHARACTERS) {
-        const expanded = await openai.chat.completions.create({
-          model: getVisionModel(),
-          messages: [
-            {
-              role: 'system',
-              content:
-                'Bạn là biên tập viên chỉ tay học cao cấp. Nhiệm vụ: mở rộng bản phân tích thành bản đầy đủ, rõ ràng, có chiều sâu, tránh lặp câu.'
-            },
-            {
-              role: 'user',
-              content: `Bản phân tích hiện tại đang quá ngắn. Hãy viết lại và mở rộng theo đúng bố cục sau, giữ văn phong chắc gọn:
-## Tính cách nổi bật
-## Đường tình cảm
-## Công việc - tiền bạc
-## Tổng quan
-
-Yêu cầu:
-- Dài hơn bản cũ, mục tiêu 700-1200 từ.
-- Mỗi mục có luận điểm cụ thể, ví dụ dễ hiểu.
-- Không dùng câu chung chung kiểu "ai cũng đúng".
-- Giữ mức độ chắc chắn hợp lý (dễ có xu hướng/có khả năng), không khẳng định tuyệt đối.
-
-Đây là bản cũ cần mở rộng:
-${content}`
-            }
-          ],
-          max_tokens: 2600
-        });
-
-        const expandedContent = expanded?.choices?.[0]?.message?.content?.trim();
-        if (expandedContent) {
-          content = expandedContent;
-        }
-      }
 
       setResult(stripFollowupSection(content));
     } catch (error) {

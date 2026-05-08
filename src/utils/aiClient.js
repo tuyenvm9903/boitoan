@@ -22,6 +22,56 @@ export const getOpenAIClient = () => {
 export const getChatModel = () => import.meta.env.VITE_OPENAI_MODEL || DEFAULT_MODEL;
 export const getVisionModel = () => import.meta.env.VITE_OPENAI_VISION_MODEL || getChatModel();
 
+export const createLongFormCompletion = async ({
+  openai,
+  model,
+  messages,
+  maxTokens = 1800,
+  temperature,
+  minCharacters = 1800,
+  maxContinuations = 2
+}) => {
+  if (!openai) {
+    throw new Error('OpenAI client is not initialized.');
+  }
+
+  let mergedContent = '';
+  let conversation = [...messages];
+
+  for (let i = 0; i <= maxContinuations; i += 1) {
+    const response = await openai.chat.completions.create({
+      model,
+      messages: conversation,
+      max_tokens: maxTokens,
+      ...(typeof temperature === 'number' ? { temperature } : {})
+    });
+
+    const content = response?.choices?.[0]?.message?.content?.trim();
+    if (!content) {
+      throw new Error('Phản hồi AI không có nội dung.');
+    }
+
+    mergedContent = mergedContent ? `${mergedContent}\n${content}` : content;
+    const finishReason = response?.choices?.[0]?.finish_reason;
+    const isComplete = finishReason !== 'length' && mergedContent.length >= minCharacters;
+    if (isComplete) {
+      return mergedContent.trim();
+    }
+
+    conversation = [
+      ...conversation,
+      { role: 'assistant', content },
+      {
+        role: 'user',
+        content:
+          'Hãy tiếp tục phần còn dang dở ngay từ đoạn trước, viết thêm cho đầy đủ và mạch lạc. Chỉ viết phần tiếp nối, không lặp lại nội dung đã có.'
+      }
+    ];
+  }
+
+  return mergedContent.trim();
+};
+
 export const getOpenAIErrorMessage = (error) => {
   const apiMessage =
     error?.error?.message ||

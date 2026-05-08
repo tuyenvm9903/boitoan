@@ -12,7 +12,7 @@ import { calculateBirthdayChart, calculatePinnaclePyramid, calculateLifeCycles }
 import { crossReferenceAnalysis } from '../utils/crossAnalysis';
 import { generatePDF } from '../services/pdfGenerator';
 import { getBirthHourFromTime, TIME_PERIODS } from '../utils/birthHourMapping';
-import { getChatModel, getOpenAIClient, getOpenAIErrorMessage } from '../utils/aiClient';
+import { createLongFormCompletion, getChatModel, getOpenAIClient, getOpenAIErrorMessage } from '../utils/aiClient';
 
 export default function PremiumReportPage() {
   const [stage, setStage] = useState('wizard'); // 'wizard', 'loading', 'reveal', 'dashboard'
@@ -125,13 +125,18 @@ export default function PremiumReportPage() {
         return;
       }
 
-      const response = await openai.chat.completions.create({
+      const content = await createLongFormCompletion({
+        openai,
         model: getChatModel(),
+        minCharacters: 2200,
+        maxTokens: 1800,
+        maxContinuations: 2,
         messages: [
           {
             role: 'system',
             content: `Bạn là Đại Sư Huyền Không - chuyên gia hàng đầu về Tử Vi Đẩu Số, Thần Số Học.
 Phong cách: Uyên bác nhưng gần gũi, tránh mê tín, tập trung phát triển bản thân.
+Chỉ dùng tiếng Việt có dấu, không trộn tiếng Trung/Anh.
 Sử dụng ẩn dụ văn hóa Á Đông. Format Markdown.`
           },
           {
@@ -165,11 +170,10 @@ Tạo báo cáo ngắn gọn (500 từ) với:
 ## DỰ BÁO GIAI ĐOẠN TỚI
 ## LỜI KHUYÊN`
           }
-        ],
-        max_tokens: 1500
+        ]
       });
 
-      setAiReport(response.choices[0].message.content);
+      setAiReport(content);
     } catch (error) {
       console.error('AI Report error:', error);
       setAiReport(`Không thể tạo báo cáo AI: ${getOpenAIErrorMessage(error)}`);
